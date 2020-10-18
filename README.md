@@ -10,7 +10,7 @@ Features
 - VR compatibility
 - served in Python, written in ClojureScript
 
-## Setup
+## Clojure Setup
 
 To get an interactive development environment run:
 
@@ -35,7 +35,13 @@ To create a production build run:
     lein do clean, cljsbuild once min
 
 And open your browser in `resources/public/index.html`. You will not
-get live reloading, nor a REPL. 
+get live reloading, nor a REPL.  
+
+## Python Setup
+
+With `figwheel` running, set up your venv with `flask` and run 
+
+	python python-server/server.py
 
 ## License
 
