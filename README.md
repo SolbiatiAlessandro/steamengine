@@ -1,10 +1,14 @@
 # steamengine
 
-FIXME: Write a one-line description of your library/project.
+A physics engine in clojurescript
 
 ## Overview
 
-FIXME: Write a paragraph about the library/project and highlight its goals.
+Features
+
+- hydrodyanmics simulations
+- VR compatibility
+- served in Python, written in ClojureScript
 
 ## Setup
 
