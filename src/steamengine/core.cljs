@@ -15,7 +15,6 @@
 (defn step-pressure [x y sources previous-pressures]
   (let [previous-pressure (get previous-pressures [x y] initial-pressure)
         source-component (get sources [x y] 0)]
-    (js/console.log (+ previous-pressure source-component))
     (+ previous-pressure source-component)))
 
 ;; -----------------------
@@ -55,20 +54,33 @@
 ;; RENDER LOGIC
 ;; -----------------------
 
+(def z-offset -5)
+(def x-offset (/ grid-size 2))
+(def y-offset (/ grid-size 2))
+(def cube-size 0.8)
+(def background-color "#939393")
+
 (defn render-cell [scene xy pressure]
-  (let [geometry (js/THREE.BoxGeometry. 0.5 0.5 0.5)
+  (let [geometry (js/THREE.BoxGeometry. cube-size cube-size cube-size)
         material (js/THREE.MeshBasicMaterial. )
         cube (js/THREE.Mesh. geometry material)]
     (do 
       ;; https://stackoverflow.com/questions/5137831/map-a-range-of-values-e-g-0-255-to-a-range-of-colours-e-g-rainbow-red-b/5137964
       (.setHSL material.color pressure 1 0.5)
-      (.set cube.position (first xy) (second xy) 0) 
+      (.set cube.position (- (first xy) x-offset) (- (second xy) y-offset) z-offset) 
       (.add scene cube))))
 
+(defn add-light [scene]
+  (let 
+    [light (js/THREE.PointLight. 0XFFFFFF 2 1000)]
+      (.set (.-position light) 0 0 0)
+      (.add scene light)))
+
 (defn render-grid [scene game]
-  (doseq [position_pressure (:grid, game)]
-    (render-cell scene (first position_pressure) (second position_pressure))))
-    
+  (do 
+    ;;(add-light scene)
+    (doseq [position_pressure (:grid, game)]
+      (render-cell scene (first position_pressure) (second position_pressure)))))
 
 ;; -----------------------
 ;; GAME LOOP
@@ -100,11 +112,13 @@
                    (.render renderer scene camera))
          ]
       (.setSize renderer (.-innerWidth js/window) (.-innerHeight js/window))
+      (.setClearColor renderer background-color)
       (set! (.-enabled (.-xr renderer)) true)
       (.appendChild (.-body js/document) (.-domElement renderer))
       (.appendChild (.-body js/document) (.createButton VRButton renderer))
       (render-grid scene @game)
       (set! (.-z (.-position camera))  5)
+      (js/console.log scene)
       (.setAnimationLoop renderer animation-loop)
     )
   )
