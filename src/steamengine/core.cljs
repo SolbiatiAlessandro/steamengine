@@ -1,5 +1,7 @@
 (ns steamengine.core
-    (:require [steamengine.combinatorics]))
+    (:require [steamengine.combinatorics]
+              [VRButton :as VRButton]
+              ))
 
 (enable-console-print!)
 
@@ -93,18 +95,17 @@
                                               0.1
                                               1000)
           renderer (js/THREE.WebGLRenderer.)
-          render (fn animate []
-                   (js/requestAnimationFrame animate)
+          animation-loop (fn animate []
                    (swap! game step-game scene)  
-                   (js/console.log @game)
                    (.render renderer scene camera))
          ]
       (.setSize renderer (.-innerWidth js/window) (.-innerHeight js/window))
+      (set! (.-enabled (.-xr renderer)) true)
       (.appendChild (.-body js/document) (.-domElement renderer))
-      ;; (.appendChild (.-body js/document) (.createButton VRButton renderer))
+      (.appendChild (.-body js/document) (.createButton VRButton renderer))
       (render-grid scene @game)
       (set! (.-z (.-position camera))  5)
-      (render)
+      (.setAnimationLoop renderer animation-loop)
     )
   )
 

@@ -23,4 +23,4 @@ def newtext():
     return jsonify({'text': 'hello from flask to cljs'})
 
 
-app.run()
+app.run(host='192.168.0.11', ssl_context='adhoc')
