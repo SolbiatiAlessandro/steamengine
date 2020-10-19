@@ -8,7 +8,10 @@
 
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/clojurescript "1.10.773"]
-                 [org.clojure/core.async  "0.4.500"]]
+                 [org.clojure/core.async  "0.4.500"]
+                 [uncomplicate/neanderthal "0.38.0" :exclusions [org.jcuda/jcuda-natives, org.jcuda/jcublas-natives]]
+                 [org.bytedeco/mkl-platform-redist "2020.1-1.5.3"]
+                 ]
 
   :plugins [[lein-figwheel "0.5.20"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
