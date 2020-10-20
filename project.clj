@@ -57,6 +57,9 @@
                 :compiler {:output-to "resources/public/js/compiled/steamengine.js"
                            :main steamengine.core
                            :optimizations :advanced
+                           :foreign-libs [{:file "resources/public/js/VRButton.js"
+                                           :provides ["VRButton"]
+                                           :module-type :commonjs}]  
                            :pretty-print false}}
 
                {:id "test"
@@ -64,7 +67,12 @@
                  :compiler {:main steamengine.test-runner
                             :output-to "resources/public/js/compiled/steamengine_test.js"
                             :output-dir "resources/public/js/compiled/"
-                            :optimizations :none}}
+                             :foreign-libs [{:file "resources/public/js/VRButton.js"
+                                             :provides ["VRButton"]
+                                             :module-type :commonjs}]  
+                            :optimizations :none
+                             :target :nodejs
+                            }}
                
                ]
               
