@@ -9,12 +9,15 @@
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/clojurescript "1.10.773"]
                  [org.clojure/core.async  "0.4.500"]
-                 [net.mikera/core.matrix "0.62.0"]]
+                 [net.mikera/core.matrix "0.62.0"]
+                 [thinktopic/aljabr "0.1.1"]
+                 ]
 
   :plugins [[lein-figwheel "0.5.20"]
+            [lein-doo "0.1.10"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
 
-  :source-paths ["src"]
+  :source-paths ["src" "test"] 
 
   :cljsbuild {:builds
               [{:id "dev"
@@ -28,7 +31,9 @@
                            ;; in the default browser once Figwheel has
                            ;; started and compiled your application.
                            ;; Comment this out once it no longer serves you.
-                           :open-urls ["http://localhost:3449/index.html"]}
+                           :open-urls ["http://localhost:3449/index.html" ]
+                           
+                           }
 
                 :compiler {:main steamengine.core
                            :target :bundle
@@ -52,13 +57,25 @@
                 :compiler {:output-to "resources/public/js/compiled/steamengine.js"
                            :main steamengine.core
                            :optimizations :advanced
-                           :pretty-print false}}]}
+                           :pretty-print false}}
+
+               {:id "test"
+                 :source-paths ["src" "test"]
+                 :compiler {:main steamengine.test-runner
+                            :output-to "resources/public/js/compiled/steamengine_test.js"
+                            :output-dir "resources/public/js/compiled/"
+                            :optimizations :none}}
+               
+               ]
+              
+              }
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"
              ;; :server-port 3449 ;; default
              ;; :server-ip "127.0.0.1"
 
              :css-dirs ["resources/public/css"] ;; watch and update CSS
+             ;; :auto-testing true
 
              ;; Start an nREPL server into the running figwheel process
              ;; :nrepl-port 7888
