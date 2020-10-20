@@ -1,7 +1,8 @@
 (ns steamengine.core
     (:require [steamengine.combinatorics]
               [VRButton :as VRButton]
-              ))
+              [clojure.core.matrix :as mat]
+              [thinktopic.aljabr.core :as imp]))
 
 (enable-console-print!)
 
