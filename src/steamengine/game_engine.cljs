@@ -15,6 +15,14 @@
 (defn pressure-grid [grid-size, dimensions]
   (mat/matrix :aljabr (fill-matrix initial-pressure (repeat dimensions grid-size))))
 
+(defn pressure-grid-apply [grid function arg]
+  "calls (function coordinates value arg) for each cell in grid,
+  see dummy-pressure-grid-apply for example function. Accepts only one arg.
+  
+  TODO: there is a bug here, arg can be only one and if I pass a {:a 2} it becomes
+  nil when is applied. I don't understand enough of clojure yet to make this work."
+  (mat/emap-indexed function grid arg))
+
 (defn get-pressure [pressure-grid coordinates]
   (apply mat/mget (into [pressure-grid] coordinates)))
 
