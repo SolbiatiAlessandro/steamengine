@@ -20,7 +20,7 @@
       (+ current-pressure source-component))))
 
 (defn create-sources[]
-  (assoc {} [0 0] 0.0005))
+  (assoc {} [2 2] 0.0005))
 
 (def sources (atom (create-sources)))
 
