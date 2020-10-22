@@ -9,6 +9,11 @@
 (defn- neighbours-map [xyz func]
   (map-indexed (fn [i xi] (assoc xyz i (func xi))) xyz))
 
-(defn neighbours [xyz wall]
+(defn- neighbours [xyz]
   (into (neighbours-map xyz inc) (neighbours-map xyz dec)))
 
+(defn- neighbour-wall [xyz wall]
+  (every? true? (map (fn [x] (and (> x -1) (< x wall))) xyz)))
+
+(defn neighbours-bounded [xyz wall]
+  (filter (fn [xyz] (neighbour-wall xyz wall)) (neighbours xyz)))
