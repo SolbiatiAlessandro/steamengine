@@ -2,12 +2,11 @@
   (:require [clojure.core.matrix :as mat]
             [steamengine.game-engine :as game-engine]))
 
-(def diffusion-precision 20)
-
-(defn diffuse [pressure-grid, grid-size, dimensions, diffusion-factor] (+ 1 1))
+(def diffusion-precision 10)
+(def atmospheric-pressure "in Pascal" 101.325)
 
 (defn- neighbours-map [xyz func]
-  (map-indexed (fn [i xi] (assoc xyz i (func xi))) xyz))
+  (map-indexed (fn [i xi] (assoc (vec xyz) i (func xi))) xyz))
 
 (defn- neighbours [xyz]
   (into (neighbours-map xyz inc) (neighbours-map xyz dec)))
@@ -17,3 +16,20 @@
 
 (defn neighbours-bounded [xyz wall]
   (filter (fn [xyz] (neighbour-wall xyz wall)) (neighbours xyz)))
+
+(defn neighbours-diffusion [xyz next-grid diffusion-factor]
+  (let [nns (neighbours-bounded xyz (game-engine/pressure-grid-size next-grid))
+        denom (+ 1 (* (count nns) diffusion-factor))
+        numer (reduce + (map (fn [xyz] (game-engine/get-pressure next-grid xyz)) nns))]
+    (/ numer denom)))
+
+(defn diffuse [curr-grid, diffusion-factor]
+  (let [next-grid (mat/clone curr-grid)]
+    (doseq [k (range diffusion-precision)]
+      (mat/emap-indexed! 
+                         (fn [xyz _] (+ (game-engine/get-pressure curr-grid xyz)
+                                        (neighbours-diffusion xyz next-grid diffusion-factor)))
+                         next-grid  
+                         ))
+    next-grid 
+    ))
