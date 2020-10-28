@@ -46,9 +46,11 @@
                            ;; To console.log CLJS data-structures make sure you enable devtools in Chrome
                            ;; https://github.com/binaryage/cljs-devtools
                            :preloads [devtools.preload]
-                           :foreign-libs [{:file "resources/public/js/VRButton.js"
+                           :foreign-libs [
+                                          {:file "resources/public/js/VRButton.js"
                                            :provides ["VRButton"]
-                                           :module-type :commonjs}]}}
+                                           :module-type :commonjs}
+                                          ]}}
                ;; This next build is a compressed minified build for
                ;; production. You can build this with:
                ;; lein cljsbuild once min
