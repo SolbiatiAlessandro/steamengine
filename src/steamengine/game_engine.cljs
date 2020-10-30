@@ -43,10 +43,10 @@
 (defn print-pressure-grid [pressure-grid]
   "only 2d, https://github.com/mikera/core.matrix/issues/347"
   (clojure.string/join "\n"
-    (map (fn [x] (
+    (map (fn [x] 
      (clojure.string/join ", " 
-          (map (fn [y] (mat/mget pressure-grid x y)) (range (second (mat/shape pressure-grid))))))
-     (range (first (mat/shape pressure-grid)))))))
+          (map (fn [y] (mat/mget pressure-grid x y)) (range (second (mat/shape pressure-grid))))) )
+     (range (first (mat/shape pressure-grid))))))
 
 (defn pressure-grids-equal [first-grid second-grid]
   (mat/equals first-grid second-grid)) 

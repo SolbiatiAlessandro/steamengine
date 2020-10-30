@@ -12,23 +12,28 @@
 ;; GAME PHYSICS
 ;; -----------------------
 
-(declare sources)
+(declare game)
 ;; (def grid-size (+ 4 (rand-int 3)))
-(def grid-size 3)
-(def dimensions 3)
-(def initial-pressure 80)
-(def diffusion-factor 90)
+(def grid-size 5)
+(def dimensions 2)
+(def initial-pressure 0)
+(def diffusion-factor 1.01)
+(def sources-period 400)
+(def sources-duration 100)
+
 (defn create-sources[]
-  (assoc {} [(rand-int grid-size) (rand-int grid-size) (rand-int grid-size)] (+ 10 (rand-int 30)))
-  )
+  (assoc {} (repeat dimensions (rand-int grid-size)) 1000))
+
+(defn update-sources [sources step]
+  (cond 
+    (= 0 (mod step sources-period )) (create-sources)
+    (= sources-duration (mod step sources-period)) {}
+    :else sources))
 
 (defn step-pressure [coordinates current-pressure]
-  (let [source-component (get @sources coordinates 0)]
+  (let [source-component (get (:sources, @game) coordinates 0)]
     (do 
       (+ current-pressure source-component))))
-
-
-(def sources (atom (create-sources)))
 
 ;; -----------------------
 ;; GAME LOGIC
@@ -39,13 +44,12 @@
   if I make the simulation run for too long
   1 - check javascript games logic (dt)
   2 - check clojure persitent ds are killing the heap"
-  500)
-(declare game)
+  2000)
 (defrecord Game [grid sources step grid-halted max-step])
 
 (defn create-grid [grid-size, dimensions]
   (let [grid (game-engine/pressure-grid grid-size dimensions initial-pressure) ]
-    ;; (game-engine/set-pressure! grid [2 2] 100)
+    ;;(game-engine/set-pressure! grid [2 2] 300)
     grid
   ))
 
@@ -88,17 +92,20 @@
                                               10)]
   (set! (.-x (.-position camera)) 0 )
   (set! (.-y (.-position camera)) 0 )
-  (set! (.-z (.-position camera)) 5 )
+  (set! (.-z (.-position camera)) 1 )
   (.add scene camera)
   camera
     ))
 
 (def scene (create-scene))
-(def z-offset (* 3 (/ grid-size 2)))
-(def x-offset (/ grid-size 2))
-(def y-offset (/ grid-size 2))
-(def cube-size 0.8)
-(def background-color "#939393")
+(def z-offset 0)
+
+;;(def x-offset (/ grid-size 2))
+(def x-offset 0.5)
+;;(def y-offset (/ grid-size 2))
+(def y-offset 0.5)
+(def cube-size (/ 1 grid-size))
+(def background-color "#ededed")
 
 (defn pressure-to-color [pressure]
   "pressure measured in kPa, color in Hue (0, 0.8)
@@ -107,29 +114,36 @@
   (let [min-pressure 0
         max-pressure 700
         min-hue 0
-        max-hue 0.8
+        max-hue 1
         ]
   (cond
     (<= pressure min-pressure) 0
-    (>= pressure max-pressure) 0.8
+    (>= pressure max-pressure) 1
     :else (* max-hue (/ (- pressure min-pressure) max-pressure)))))
 
 
 (defn color-cell [cell pressure]
       ;; https://stackoverflow.com/questions/5137831/map-a-range-of-values-e-g-0-255-to-a-range-of-colours-e-g-rainbow-red-b/5137964
   (let [material (.-material cell)]
-    (set! (.-transparency material) true)
-    (set! (.-opacity material) 0.5)
-    (.setHSL (.-color material) (pressure-to-color pressure) 1 0.6 0.5)))
+    (set! (.-transparent material) true)
+    (set! (.-opacity material) (pressure-to-color pressure))
+    (.setHSL (.-color material) 0.6 1 0.5 0.5)))
+
+(defn set-position [cell xyz]
+  (let [scale (fn [x] (/ x grid-size))] 
+    (if (= dimensions 2)
+      (.set cell.position (- (scale (first xyz)) x-offset) (- (scale (second xyz)) y-offset))
+      (.set cell.position (- (scale (first xyz)) x-offset) (- (scale (second xyz)) y-offset) (- (scale (nth xyz 2)) z-offset)) 
+    ))
+  )
 
 (defn render-new-cell [xyz pressure]
   (let [geometry (js/THREE.BoxGeometry. cube-size cube-size cube-size)
         material (js/THREE.MeshLambertMaterial. )
         cube (js/THREE.Mesh. geometry material)]
     (do 
-      (js/console.log "new cell")
+      (set-position cube xyz)
       (color-cell cube pressure)
-      (.set cube.position (- (first xyz) x-offset) (- (second xyz) y-offset) (- (nth xyz 2) z-offset)) 
       (set! (.-name cube) (str xyz))
       (.add scene cube))))
 
@@ -151,18 +165,22 @@
 (defn step-game [game]
   (if (or (:max-step, game) (:grid-halted, game))
     game
-    (let [stepped-grid (step-grid (:grid, game) )
-          grid-halted (game-engine/pressure-grids-equal (:grid, game) stepped-grid)
+    (let [next-grid (step-grid (:grid, game) )
+          grid-halted (game-engine/pressure-grids-equal (:grid, game) next-grid)
           max-step (> (:step, game) step-limit)
+          next-step (+ (:step, game) 1)
+          next-sources (update-sources (:sources, game) next-step)
           ]
       (do 
         (render-grid game)
         (if grid-halted (do
                           (js/alert "physics engine: equilibrium reached") 
-                          (js/alert (game-engine/print-pressure-grid stepped-grid)) 
+                          (js/console.log (game-engine/print-pressure-grid next-grid)) 
                           ))
         ;;(if max-step (js/alert "game engine: limit physics simulation reached"))
-        (Game. stepped-grid (:sources, game) (+ (:step, game) 1) grid-halted max-step)))))
+        (Game. next-grid next-sources next-step grid-halted max-step)))))
+
+(def stats (atom (js/Stats.)) )
 
 (defn startup-app
   []
@@ -170,9 +188,14 @@
           camera (create-camera scene)
           renderer (js/THREE.WebGLRenderer.)
           animation-loop (fn animate []
+                   (.begin @stats)
                    (swap! game step-game)  
-                   (.render renderer scene camera))
+                   (.render renderer scene camera)
+                   (.end @stats)
+                   )
          ]
+      (.showPanel @stats "all")
+      (.appendChild (.-body js/document) (.-dom @stats))  
       (.setSize renderer (.-innerWidth js/window) (.-innerHeight js/window))
       (.setClearColor renderer background-color)
       (set! (.-enabled (.-xr renderer)) true)
