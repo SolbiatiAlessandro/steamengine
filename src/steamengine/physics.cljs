@@ -2,8 +2,7 @@
   (:require [clojure.core.matrix :as mat]
             [steamengine.game-engine :as game-engine]))
 
-(def diffusion-precision 20)
-(def atmospheric-pressure "in Pascal" 101.325)
+(def diffusion-precision 5)
 
 (defn- neighbours-map [xyz func]
   (map-indexed (fn [i xi] (assoc (vec xyz) i (func xi))) xyz))

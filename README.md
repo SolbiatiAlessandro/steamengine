@@ -10,6 +10,8 @@ Features
 - VR compatibility
 - served in Python, written in ClojureScript
 
+You can find in profiling.md some measurements around speed and efficiency of the simulation.
+
 ## Clojure Setup
 
 To get an interactive development environment run:
