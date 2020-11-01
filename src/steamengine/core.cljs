@@ -26,7 +26,7 @@
    :scale-factor 1
    })
 
-(def settings vr-settings)
+(def settings laptop-settings)
 
 ;; -----------------------
 ;; GAME PHYSICS
