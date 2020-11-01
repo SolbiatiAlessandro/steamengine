@@ -16,17 +16,17 @@
 (defn neighbours-bounded [xyz wall]
   (filter (fn [xyz] (neighbour-wall xyz wall)) (neighbours xyz)))
 
-(defn neighbours-diffusion [xyz next-grid diffusion-factor curr-pressure]
-  (let [nns (neighbours-bounded xyz (game-engine/pressure-grid-size next-grid))
+(defn neighbours-diffusion [xyz next-grid diffusion-factor curr-density]
+  (let [nns (neighbours-bounded xyz (game-engine/grid-size next-grid))
         denom (+ 1 (* (count nns) diffusion-factor))
-        numer (+ curr-pressure (reduce + (map (fn [xyz] (game-engine/get-pressure next-grid xyz)) nns)))]
+        numer (+ curr-density (reduce + (map (fn [xyz] (game-engine/grid-val next-grid xyz)) nns)))]
     (/ numer denom)))
 
 (defn diffuse [curr-grid, diffusion-factor]
   (let [next-grid (mat/clone curr-grid)]
     (doseq [k (range diffusion-precision)]
       (mat/emap-indexed! 
-                         (fn [xyz _] (neighbours-diffusion xyz next-grid diffusion-factor (game-engine/get-pressure curr-grid xyz) ) )
+                         (fn [xyz _] (neighbours-diffusion xyz next-grid diffusion-factor (game-engine/grid-val curr-grid xyz) ) )
                          next-grid  
                          ))
     next-grid 

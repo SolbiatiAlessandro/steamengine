@@ -4,7 +4,7 @@
     [steamengine.game-engine]
     ))
 
-(def test-pressure 0)
+(def test-value 0)
 
 (deftest test-fill-matrix
   (is (= (steamengine.game-engine/fill-matrix 0.1 [2 2]) [[0.1 0.1] [0.1 0.1]]))
@@ -12,58 +12,58 @@
   (is (= (steamengine.game-engine/fill-matrix 0.1 [2 2 2]) [[[0.1 0.1] [0.1 0.1]] [[0.1 0.1] [0.1 0.1]]]))
   )
 
-(deftest test-get-pressure-2d
-  (let [test-pressure 1.251259
-        m (steamengine.game-engine/pressure-grid 2 2 test-pressure)] 
-    (is (= (steamengine.game-engine/get-pressure m [0 0]) test-pressure))
-    (is (= (steamengine.game-engine/get-pressure m [0 1]) test-pressure))
-    (is (= (steamengine.game-engine/get-pressure m [1 0]) test-pressure))
-    (is (= (steamengine.game-engine/get-pressure m [1 1]) test-pressure))
+(deftest test-grid-val-2d
+  (let [test-value 1.251259
+        m (steamengine.game-engine/grid 2 2 test-value)] 
+    (is (= (steamengine.game-engine/grid-val m [0 0]) test-value))
+    (is (= (steamengine.game-engine/grid-val m [0 1]) test-value))
+    (is (= (steamengine.game-engine/grid-val m [1 0]) test-value))
+    (is (= (steamengine.game-engine/grid-val m [1 1]) test-value))
     ))
 
-(deftest test-get-pressure-3d
-  (let [m (steamengine.game-engine/pressure-grid 2 3)]
-    (is (= (steamengine.game-engine/get-pressure m [0 0 0]) test-pressure))
-    (is (= (steamengine.game-engine/get-pressure m [1 1 1]) test-pressure))
+(deftest test-grid-val-3d
+  (let [m (steamengine.game-engine/grid 2 3)]
+    (is (= (steamengine.game-engine/grid-val m [0 0 0]) test-value))
+    (is (= (steamengine.game-engine/grid-val m [1 1 1]) test-value))
     ))
 
-(deftest test-set-pressure-2d
-   (let [m (steamengine.game-engine/pressure-grid 3 2)]
-    (steamengine.game-engine/set-pressure! m [0 0] 0.2)
-    (is (= (steamengine.game-engine/get-pressure m [0 0]) 0.2))
-    (steamengine.game-engine/set-pressure! m [2 2] 0.2)
-    (is (= (steamengine.game-engine/get-pressure m [2 2]) 0.2))
+(deftest test-set-value-2d
+   (let [m (steamengine.game-engine/grid 3 2)]
+    (steamengine.game-engine/grid-val! m [0 0] 0.2)
+    (is (= (steamengine.game-engine/grid-val m [0 0]) 0.2))
+    (steamengine.game-engine/grid-val! m [2 2] 0.2)
+    (is (= (steamengine.game-engine/grid-val m [2 2]) 0.2))
     ))
 
-(deftest test-set-pressure-3d
-   (let [m (steamengine.game-engine/pressure-grid 3 3)]
-    (steamengine.game-engine/set-pressure! m [0 0 0] 0.2)
-    (is (= (steamengine.game-engine/get-pressure m [0 0 0]) 0.2))
-    (steamengine.game-engine/set-pressure! m [2 2 1] 0.2)
-    (is (= (steamengine.game-engine/get-pressure m [2 2 1]) 0.2))
+(deftest test-set-value-3d
+   (let [m (steamengine.game-engine/grid 3 3)]
+    (steamengine.game-engine/grid-val! m [0 0 0] 0.2)
+    (is (= (steamengine.game-engine/grid-val m [0 0 0]) 0.2))
+    (steamengine.game-engine/grid-val! m [2 2 1] 0.2)
+    (is (= (steamengine.game-engine/grid-val m [2 2 1]) 0.2))
     ))
 
-(defn dummy-pressure-grid-apply [coordinates value a]
+(defn dummy-grid-apply [coordinates value a]
   (+ (reduce + coordinates) value a))
 
-(defn dummy-pressure-grid-apply-no-arg [coordinates value]
+(defn dummy-grid-apply-no-arg [coordinates value]
   (+ (reduce + coordinates) value))
 
-(deftest pressure-grid-apply-2d
-  (let [m (steamengine.game-engine/pressure-grid 2 2)
-        n (steamengine.game-engine/pressure-grid-apply m dummy-pressure-grid-apply 2)
-        s (steamengine.game-engine/pressure-grid-apply m dummy-pressure-grid-apply-no-arg)] 
+(deftest grid-apply-2d
+  (let [m (steamengine.game-engine/grid 2 2)
+        n (steamengine.game-engine/grid-apply m dummy-grid-apply 2)
+        s (steamengine.game-engine/grid-apply m dummy-grid-apply-no-arg)] 
     (do 
-      (is (= (steamengine.game-engine/get-pressure n [0 0]) (+ 0 0 test-pressure 2)))
-      (is (= (steamengine.game-engine/get-pressure n [1 1]) (+ 1 1 test-pressure 2)))
-      (is (= (steamengine.game-engine/get-pressure s [0 0]) (+ 0 0 test-pressure)))
+      (is (= (steamengine.game-engine/grid-val n [0 0]) (+ 0 0 test-value 2)))
+      (is (= (steamengine.game-engine/grid-val n [1 1]) (+ 1 1 test-value 2)))
+      (is (= (steamengine.game-engine/grid-val s [0 0]) (+ 0 0 test-value)))
       )))
 
-(deftest pressure-grid-apply-3d
-  (let [m (steamengine.game-engine/pressure-grid 3 3)
-        n (steamengine.game-engine/pressure-grid-apply m dummy-pressure-grid-apply 2)]
+(deftest grid-apply-3d
+  (let [m (steamengine.game-engine/grid 3 3)
+        n (steamengine.game-engine/grid-apply m dummy-grid-apply 2)]
     (do 
-      (is (= (steamengine.game-engine/get-pressure n [0 0 0]) (+ 0 0 0 test-pressure 2)))
-      (is (= (steamengine.game-engine/get-pressure n [1 1 1]) (+ 1 1 1 test-pressure 2)))
-      (is (= (steamengine.game-engine/get-pressure n [2 2 2]) (+ 2 2 2 test-pressure 2)))
+      (is (= (steamengine.game-engine/grid-val n [0 0 0]) (+ 0 0 0 test-value 2)))
+      (is (= (steamengine.game-engine/grid-val n [1 1 1]) (+ 1 1 1 test-value 2)))
+      (is (= (steamengine.game-engine/grid-val n [2 2 2]) (+ 2 2 2 test-value 2)))
       )))

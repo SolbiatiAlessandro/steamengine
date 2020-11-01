@@ -80,13 +80,13 @@
 (defrecord Game [grid sources step grid-halted max-step])
 
 (defn create-grid [grid-size, dimensions]
-  (let [grid (game-engine/pressure-grid grid-size dimensions initial-pressure) ]
-    ;;(game-engine/set-pressure! grid [2 2] 300)
+  (let [grid (game-engine/grid grid-size dimensions initial-pressure) ]
+    ;;(game-engine/grid-val! grid [2 2] 300)
     grid
   ))
 
 (defn step-grid [grid]
-  (physics/diffuse (game-engine/pressure-grid-apply grid step-pressure) scaled-diffusion-factor))
+  (physics/diffuse (game-engine/grid-apply grid step-pressure) scaled-diffusion-factor))
 
 
 (defn create-game[]
@@ -185,7 +185,7 @@
     (render-new-cell xyz pressure)))
 
 (defn render-grid [game]
-  (game-engine/pressure-grid-apply (:grid, game) render-cell))
+  (game-engine/grid-apply (:grid, game) render-cell))
 
 ;; -----------------------
 ;; GAME LOOP
@@ -198,7 +198,7 @@
   (if (or (:max-step, game) (:grid-halted, game))
     game
     (let [next-grid (step-grid (:grid, game) )
-          grid-halted (game-engine/pressure-grids-equal (:grid, game) next-grid)
+          grid-halted (game-engine/grids-equal (:grid, game) next-grid)
           max-step (and step-limit-on (> (:step, game) step-limit))
           next-step (+ (:step, game) 1)
           next-sources (update-sources (:sources, game) next-step)
@@ -207,7 +207,7 @@
         (render-grid game)
         (if grid-halted (do
                           (js/alert "physics engine: equilibrium reached") 
-                          (js/console.log (game-engine/print-pressure-grid next-grid)) 
+                          (js/console.log (game-engine/print-grid next-grid)) 
                           ))
         ;;(if max-step (js/alert "game engine: limit physics simulation reached"))
         (Game. next-grid next-sources next-step grid-halted max-step)))))
