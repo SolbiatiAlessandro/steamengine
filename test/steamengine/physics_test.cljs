@@ -61,3 +61,13 @@
      (is (= test-value (ge/grid-val test-grid [1 2])))
      (is (< test-value (ge/grid-val (p/diffuse test-grid 0.1) [1 2])))
      ))
+
+(deftest test-advection
+  (let [density (ge/grid 5 2 test-value)
+         u (ge/grid 5 2 1)
+         v (ge/grid 5 2 0)
+         advected (p/advect density [u v])
+         ]
+    (is (= [1 2] (p/project [2 2] [u v] (ge/grid-size density))))
+    (is (= test-value (p/advect-point [2 2] density [u v])))
+    (is (= test-value (ge/grid-val advected [2 2])))))

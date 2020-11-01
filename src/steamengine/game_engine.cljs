@@ -2,6 +2,8 @@
               (:require [clojure.core.matrix :as mat]
               [thinktopic.aljabr.core :as imp]))  
 
+(def float-int-accuracy "e.g. 9.99 is considered as 10" 0.02)
+
 (defn- fill-matrix [value [first-dimension & remaining-dimensions]]
   "Creates a matrix filled with `value` and has dimensions [x y z ..]
   Used as input at core.matrix/matrix. See `test-fill-matrix` for usage."
@@ -20,6 +22,10 @@
   "grid is a square"
   (first (mat/shape grid)))
 
+(defn point-in-grid? [xyz grid]
+  (let [s (- (grid-size grid) 1)]
+    (every? (fn [x] (and (>= x 0) (<= x s))) xyz)))
+
 (defn grid-apply 
   "calls (function coordinates value arg) for each cell in grid,
   see dummy-grid-apply for example function. Accepts only one arg.
@@ -35,7 +41,41 @@
   ([grid function arg] (mat/emap-indexed function grid arg)))
 
 (defn grid-val [grid coordinates]
+  "get grid value from discrete coordinates xy = [1, 2]"
   (apply mat/mget (into [grid] coordinates)))
+
+(defn- grid-float-to-int [x]
+  (let [x0 (int x) x1 (+ x0 1)] [x0 x1]))
+
+(defn- neighbours-float [xyz]
+  "get discrete neighbours from a 2d continuous point"
+  (let [dim (count xyz)]
+    (if (= dim 2)
+      (for [x (grid-float-to-int (first xyz)) 
+            y (grid-float-to-int (second xyz))] [x y])
+      (for [x (grid-float-to-int (first xyz)) 
+            y (grid-float-to-int (second xyz))
+            z (grid-float-to-int (nth xyz 2))] [x y z]))))
+
+(defn float-approx-int [x] 
+  "can this float be approximated by an int within float-int-accuracy?"
+  (cond 
+    (< (mod x 1) float-int-accuracy) (int x)
+    (< (- 1 x) float-int-accuracy) (+ 1 (int x))
+    :else false))
+
+(defn grid-val-float [grid coordinates]
+  "get grid value from continuous coordinates xy = [1.5, 2.2]"
+  (cond 
+    (not (point-in-grid? coordinates grid)) (throw (js/Error "game-engine error: trying to access point out of grid!"))   
+    (every? float-approx-int coordinates) (grid-val grid (map float-approx-int coordinates))
+    :real-float-coordinates (let [neighbours (neighbours-float coordinates)]
+        (apply + (map (fn [xyz] (* (grid-val grid xyz) (grid-val-float--weight xyz coordinates))) neighbours)))
+    ))
+
+(defn- grid-val-float--weight [xyz-int xyz-float]
+  (reduce * 
+    (map-indexed (fn [i x] (- 1 (js/Math.abs (- x (nth xyz-int i))))) xyz-float)))
 
 (defn grid-val! [grid coordinates value]
   (apply mat/mset! (concat [grid] coordinates [value])))

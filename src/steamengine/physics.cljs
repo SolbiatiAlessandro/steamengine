@@ -32,24 +32,22 @@
     next-grid 
     ))
 
-(defn neighbours-advection [ijk velocities grid-size]
-  """
-  ijk = [1, 2, 3] velocities = [u_grid, v_grid, w_grid], variable naming from paper
-  """
-  (let [xyz (map-indexed (fn [i, x] (- x (game-engine/get-pressure (nth velocities i) ijk))) ijk)
-        bounded-xyz (map (fn [x] (cond (< x 0.5) 0.5 (> x grid-size) (+ grid-size 0.5) :else x)) xyz)
-        ijk0 (map int bounded-xyz)
-        ijk1 (map (comp inc int bounded-xyz))
-        stu1 (map-indexed (fn [i, x] (- x (nth ijk0 i))) bounded-xyz)
-        stu0 (map (fn [x] (- 1 x)) stu1)
-        ]
-
-    
-    ))
+(defn project [xyz velocities grid-size]
+  "project point back in space given static velocity vector"
+  (let [proj (map-indexed (fn [i, x] (- x (game-engine/grid-val (nth velocities i) xyz))) xyz) 
+        lower-boundary 0.5
+        upper-boundary (- grid-size 0.5)]
+          (map (fn [x] (cond 
+                         (< x lower-boundary) lower-boundary
+                         (> x upper-boundary) upper-boundary
+                         :else x)) proj)))
 
 
-(defn advect [xyz]
-   (let [ proj (map-indexed (fn [i, x] (- x (game-engine/get-pressure (nth velocities i) xyz))) xyz)
-          bounded-proj (map (fn [x] (cond (< x 0.5) 0.5 (> x grid-size) (+ grid-size 0.5) :else x)) proj)])
-  )
+(defn advect-point [xyz density velocities]
+   "trace backwards xyz through velocities to float positioned density"
+   (let [xyz-float (project xyz velocities (game-engine/grid-size density))]
+     (game-engine/grid-val-float density xyz-float)))
 
+(defn advect [density velocities]
+  "advection of density given a static velocity field"
+  (mat/emap-indexed (fn [xyz] (advect-point xyz density velocities)) density))
