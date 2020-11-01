@@ -26,7 +26,7 @@
    :scale-factor 1
    })
 
-(def settings vr-settings)
+(def settings laptop-settings)
 
 ;; -----------------------
 ;; GAME PHYSICS
@@ -36,7 +36,7 @@
 ;; (def grid-size (+ 4 (rand-int 3)))
 (def grid-size (:grid-size settings))
 (def dimensions (:dimensions settings))
-(def initial-pressure 0)
+(def initial-density 0)
 (def diffusion-factor "the smaller, the faster diffusion"
   0.9)
 (def scaled-diffusion-factor 
@@ -61,10 +61,10 @@
     (= sources-duration (mod step sources-period)) {}
     :else sources))
 
-(defn step-pressure [coordinates current-pressure]
+(defn add-density-sources [coordinates current-density]
   (let [source-component (get (:sources, @game) coordinates 0)]
     (do 
-      (+ current-pressure source-component))))
+      (+ current-density source-component))))
 
 ;; -----------------------
 ;; GAME LOGIC
@@ -80,13 +80,13 @@
 (defrecord Game [grid sources step grid-halted max-step])
 
 (defn create-grid [grid-size, dimensions]
-  (let [grid (game-engine/grid grid-size dimensions initial-pressure) ]
+  (let [grid (game-engine/grid grid-size dimensions initial-density) ]
     ;;(game-engine/grid-val! grid [2 2] 300)
     grid
   ))
 
 (defn step-grid [grid]
-  (physics/diffuse (game-engine/grid-apply grid step-pressure) scaled-diffusion-factor))
+  (physics/diffuse (game-engine/grid-apply grid add-density-sources) scaled-diffusion-factor))
 
 
 (defn create-game[]
@@ -154,11 +154,11 @@
     :else mid-opacity)))
 
 
-(defn color-cell [cell pressure]
+(defn color-cell [cell density]
       ;; https://stackoverflow.com/questions/5137831/map-a-range-of-values-e-g-0-255-to-a-range-of-colours-e-g-rainbow-red-b/5137964
   (let [material (.-material cell)]
     (set! (.-transparent material) true)
-    (set! (.-opacity material) (density-to-opacity pressure))
+    (set! (.-opacity material) (density-to-opacity density))
     (.setHSL (.-color material) 0.6 1 0.5 0.5)))
 
 (defn set-position [cell xyz]
@@ -169,20 +169,20 @@
     ))
   )
 
-(defn render-new-cell [xyz pressure]
+(defn render-new-cell [xyz density]
   (let [geometry (js/THREE.BoxGeometry. cube-size cube-size cube-size)
         material (js/THREE.MeshLambertMaterial. )
         cube (js/THREE.Mesh. geometry material)]
     (do 
       (set-position cube xyz)
-      (color-cell cube pressure)
+      (color-cell cube density)
       (set! (.-name cube) (str xyz))
       (.add scene cube))))
 
-(defn render-cell [xyz pressure]
+(defn render-cell [xyz density]
   (if-let [existing-cell (.getObjectByName scene (str xyz))]
-    (color-cell existing-cell pressure)
-    (render-new-cell xyz pressure)))
+    (color-cell existing-cell density)
+    (render-new-cell xyz density)))
 
 (defn render-grid [game]
   (game-engine/grid-apply (:grid, game) render-cell))
