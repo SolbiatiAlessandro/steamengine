@@ -19,11 +19,12 @@
 (defn neighbours-diffusion [xyz next-grid diffusion-factor curr-density]
   (let [nns (neighbours-bounded xyz (game-engine/grid-size next-grid))
         denom (+ 1 (* (count nns) diffusion-factor))
-        numer (+ curr-density (reduce + (map (fn [xyz] (game-engine/grid-val next-grid xyz)) nns)))]
+        numer (+ curr-density (* diffusion-factor (reduce + (map (fn [xyz] (game-engine/grid-val next-grid xyz)) nns))))]
     (/ numer denom)))
 
-(defn diffuse [curr-grid, diffusion-factor]
-  (let [next-grid (mat/clone curr-grid)]
+(defn diffuse [curr-grid, diffusion-factor, dt]
+  (let [next-grid (mat/clone curr-grid)
+        diffusion-factor (* diffusion-factor dt)]
     (doseq [k (range diffusion-precision)]
       (mat/emap-indexed! 
                          (fn [xyz _] (neighbours-diffusion xyz next-grid diffusion-factor (game-engine/grid-val curr-grid xyz) ) )
@@ -32,22 +33,25 @@
     next-grid 
     ))
 
-(defn project [xyz velocities grid-size]
+(defn project [xyz velocities grid-size dt]
   "project point back in space given static velocity vector"
-  (let [proj (map-indexed (fn [i, x] (- x (game-engine/grid-val (nth velocities i) xyz))) xyz) 
-        lower-boundary 0.5
-        upper-boundary (- grid-size 0.5)]
+  (let [proj (map-indexed (fn [i, x] (- x (* dt (game-engine/grid-val (nth velocities i) xyz)))) xyz) 
+        lower-boundary 0
+        upper-boundary (- grid-size 1)]
           (map (fn [x] (cond 
                          (< x lower-boundary) lower-boundary
                          (> x upper-boundary) upper-boundary
                          :else x)) proj)))
 
 
-(defn advect-point [xyz density velocities]
+(defn advect-point [xyz density velocities dt]
    "trace backwards xyz through velocities to float positioned density"
-   (let [xyz-float (project xyz velocities (game-engine/grid-size density))]
-     (game-engine/grid-val-float density xyz-float)))
+   (let [xyz-p (project xyz velocities (game-engine/grid-size density) dt)]
+     ;;(js/console.log "advect-point")
+     ;;(js/console.log (clj->js xyz))
+     ;;(js/console.log (clj->js xyz-p))
+     (game-engine/grid-val-float density xyz-p)))
 
-(defn advect [density velocities]
+(defn advect [density velocities dt]
   "advection of density given a static velocity field"
-  (mat/emap-indexed (fn [xyz] (advect-point xyz density velocities)) density))
+  (mat/emap-indexed (fn [xyz] (advect-point xyz density velocities dt)) density))

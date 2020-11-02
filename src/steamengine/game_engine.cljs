@@ -64,6 +64,10 @@
     (< (- 1 x) float-int-accuracy) (+ 1 (int x))
     :else false))
 
+(defn- grid-val-float--weight [xyz-int xyz-float]
+  (reduce * 
+    (map-indexed (fn [i x] (- 1 (js/Math.abs (- x (nth xyz-int i))))) xyz-float)))
+
 (defn grid-val-float [grid coordinates]
   "get grid value from continuous coordinates xy = [1.5, 2.2]"
   (cond 
@@ -73,9 +77,6 @@
         (apply + (map (fn [xyz] (* (grid-val grid xyz) (grid-val-float--weight xyz coordinates))) neighbours)))
     ))
 
-(defn- grid-val-float--weight [xyz-int xyz-float]
-  (reduce * 
-    (map-indexed (fn [i x] (- 1 (js/Math.abs (- x (nth xyz-int i))))) xyz-float)))
 
 (defn grid-val! [grid coordinates value]
   (apply mat/mset! (concat [grid] coordinates [value])))
@@ -91,3 +92,4 @@
 (defn grids-equal [first-grid second-grid]
   (mat/equals first-grid second-grid)) 
 
+(defn now-seconds [] (/ (.getTime (js/Date. )) 1000))

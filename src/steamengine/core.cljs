@@ -37,22 +37,19 @@
 (def grid-size (:grid-size settings))
 (def dimensions (:dimensions settings))
 (def initial-density 0)
-(def diffusion-factor "the smaller, the faster diffusion"
-  0.9)
-(def scaled-diffusion-factor 
-  "currently the closer to one the faster the diffusion
-  it need to be sclaed by grid-size:
-  - high grid size, faster diffusion, smaller diffusion-factor 
-  - small grid size, smaller diffusion, higher diffusion factor "
-  (+ 1 (/ diffusion-factor (js/Math.pow grid-size dimensions))))  
+(def diffusion-factor 0.001)
+(def scaled-diffusion-factor (* diffusion-factor (js/Math.pow grid-size dimensions)))  
 (def sources-period 500)
-(def sources-duration 300)
+(def sources-duration 20)
 (def sources-value 1)
 ;; we use 1-neighbours for source size
 ;; (def sources-size (/ grid-size 4))
 
 (defn create-sources[]
-  (let [source-center (repeat dimensions (rand-int grid-size))]
+  (let [
+      ;;source-center (repeat dimensions (rand-int grid-size))
+      source-center (repeat dimensions (int (/ grid-size 2)))
+        ]
   (zipmap (physics/neighbours-bounded source-center grid-size) (repeat dimensions sources-value))))
 
 (defn update-sources [sources step]
@@ -77,7 +74,7 @@
   2 - check clojure persitent ds are killing the heap"
   2000)
 (def step-limit-on false)
-(defrecord Game [grid sources step grid-halted max-step])
+(defrecord Game [grid sources step grid-halted max-step seconds velocities])
 
 (defn create-grid [grid-size, dimensions]
   (let [grid (game-engine/grid grid-size dimensions initial-density) ]
@@ -85,14 +82,30 @@
     grid
   ))
 
-(defn step-grid [grid]
-  (physics/diffuse (game-engine/grid-apply grid add-density-sources) scaled-diffusion-factor))
+(defn create-velocities [grid-size, dimensions]
+  ;;(map (fn [_] (game-engine/grid grid-size dimensions 0.0000000004)) (range dimensions))))
+  [(game-engine/grid grid-size dimensions -0.000000000015) (game-engine/grid grid-size dimensions 0)])
+
+
+(defn step-grid [grid velocities dt]
+  (let [
+         grid-with-sources (game-engine/grid-apply grid add-density-sources) 
+         grid-diffused (physics/diffuse grid-with-sources scaled-diffusion-factor dt)   
+         grid-advected (physics/advect grid-diffused velocities dt)
+        ]
+    (js/console.log dt)
+    grid-diffused 
+    ;;grid-advected
+    ))
 
 
 (defn create-game[]
   (let [sources (create-sources)
-        grid (create-grid grid-size dimensions)]
-    (Game. grid sources 0 false false)))
+        grid (create-grid grid-size dimensions)
+        seconds (game-engine/now-seconds)
+        velocities (create-velocities grid-size dimensions)
+        ]
+    (Game. grid sources 0 false false seconds velocities)))
 
 (def game (atom (create-game)))
 
@@ -142,8 +155,8 @@
 (def background-color "#ededed")
 
 (defn density-to-opacity [density]
-  (let [min-density (* 0.8 sources-value)
-        max-density sources-value
+  (let [min-density (* 0.1 sources-value)
+        max-density (* 0.2 sources-value)
         min-opacity 0
         max-opacity 0.7
         mid-opacity 0.3
@@ -197,11 +210,15 @@
 (defn step-game [game]
   (if (or (:max-step, game) (:grid-halted, game))
     game
-    (let [next-grid (step-grid (:grid, game) )
-          grid-halted (game-engine/grids-equal (:grid, game) next-grid)
+    (let [
+          now (game-engine/now-seconds)
+          next-grid (step-grid (:grid, game) (:velocities, game) (- now (:seconds, game)))
+          ;;grid-halted (game-engine/grids-equal (:grid, game) next-grid)
+          grid-halted false
           max-step (and step-limit-on (> (:step, game) step-limit))
           next-step (+ (:step, game) 1)
           next-sources (update-sources (:sources, game) next-step)
+          next-velocities (:velocities, game)
           ]
       (do 
         (render-grid game)
@@ -210,7 +227,7 @@
                           (js/console.log (game-engine/print-grid next-grid)) 
                           ))
         ;;(if max-step (js/alert "game engine: limit physics simulation reached"))
-        (Game. next-grid next-sources next-step grid-halted max-step)))))
+        (Game. next-grid next-sources next-step grid-halted max-step now next-velocities)))))
 
 (def stats (atom (js/Stats.)) )
 (def dom-root (.getElementById js/document "frame"))
