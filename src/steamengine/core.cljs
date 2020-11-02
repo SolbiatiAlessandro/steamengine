@@ -26,7 +26,7 @@
    :scale-factor 1
    })
 
-(def settings laptop-settings)
+(def settings vr-settings)
 
 ;; -----------------------
 ;; GAME PHYSICS
@@ -48,7 +48,8 @@
 (defn create-sources[]
   (let [
       ;;source-center (repeat dimensions (rand-int grid-size))
-      source-center (repeat dimensions (int (/ grid-size 2)))
+      source-center (repeat dimensions (int (/ grid-size 4)))
+      ;;source-center (repeat dimensions 0)
         ]
   (zipmap (physics/neighbours-bounded source-center grid-size) (repeat dimensions sources-value))))
 
@@ -83,8 +84,8 @@
   ))
 
 (defn create-velocities [grid-size, dimensions]
-  ;;(map (fn [_] (game-engine/grid grid-size dimensions 0.0000000004)) (range dimensions))))
-  [(game-engine/grid grid-size dimensions -0.000000000015) (game-engine/grid grid-size dimensions 0)])
+    (map (fn [_] (game-engine/grid grid-size dimensions 20)) (range dimensions))) 
+  ;;[(game-engine/grid grid-size dimensions -0.000000000015) (game-engine/grid grid-size dimensions 0)])
 
 
 (defn step-grid [grid velocities dt]
@@ -93,9 +94,9 @@
          grid-diffused (physics/diffuse grid-with-sources scaled-diffusion-factor dt)   
          grid-advected (physics/advect grid-diffused velocities dt)
         ]
-    (js/console.log dt)
-    grid-diffused 
-    ;;grid-advected
+    ;;(js/console.log dt)
+    ;;grid-diffused 
+    grid-advected
     ))
 
 
@@ -208,26 +209,28 @@
 (defonce app-state (atom {:text "Hello world!"}))
 
 (defn step-game [game]
-  (if (or (:max-step, game) (:grid-halted, game))
-    game
-    (let [
-          now (game-engine/now-seconds)
-          next-grid (step-grid (:grid, game) (:velocities, game) (- now (:seconds, game)))
-          ;;grid-halted (game-engine/grids-equal (:grid, game) next-grid)
-          grid-halted false
-          max-step (and step-limit-on (> (:step, game) step-limit))
-          next-step (+ (:step, game) 1)
-          next-sources (update-sources (:sources, game) next-step)
-          next-velocities (:velocities, game)
-          ]
-      (do 
-        (render-grid game)
-        (if grid-halted (do
-                          (js/alert "physics engine: equilibrium reached") 
-                          (js/console.log (game-engine/print-grid next-grid)) 
-                          ))
-        ;;(if max-step (js/alert "game engine: limit physics simulation reached"))
-        (Game. next-grid next-sources next-step grid-halted max-step now next-velocities)))))
+  (let [
+        now (game-engine/now-seconds)
+        next-step (+ (:step, game) 1)
+        ]
+    (if (or (:max-step, game) (:grid-halted, game) (< (:step, game) 100))
+      (Game. (:grid, game) (:sources, game) next-step (:grid-halted, game) (:max-step, game) now (:velocities, game))
+      (let [
+            next-grid (step-grid (:grid, game) (:velocities, game) (- now (:seconds, game)))
+            ;;grid-halted (game-engine/grids-equal (:grid, game) next-grid)
+            grid-halted false
+            max-step (and step-limit-on (> (:step, game) step-limit))
+            next-sources (update-sources (:sources, game) next-step)
+            next-velocities (:velocities, game)
+            ]
+        (do 
+          (render-grid game)
+          (if grid-halted (do
+                            (js/alert "physics engine: equilibrium reached") 
+                            (js/console.log (game-engine/print-grid next-grid)) 
+                            ))
+          ;;(if max-step (js/alert "game engine: limit physics simulation reached"))
+          (Game. next-grid next-sources next-step grid-halted max-step now next-velocities))))))
 
 (def stats (atom (js/Stats.)) )
 (def dom-root (.getElementById js/document "frame"))
