@@ -4,7 +4,7 @@ A VR browser-based **physics engine** written in [clojurescript](https://clojure
 
 ## Examples
 
-1. **[https://www.youtube.com/watch?v=d7r9XxQVUjM](https://www.youtube.com/watch?v=d7r9XxQVUjM)** 3D diffusion of water in a box (from a Oculus Quest 1 browser) 
+1. **[https://youtube.com/d7r9XxQVUjM](https://www.youtube.com/watch?v=d7r9XxQVUjM)** 3D diffusion of water in a box (from a Oculus Quest 1 browser) 
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/d7r9XxQVUjM/0.jpg)](https://www.youtube.com/watch?v=d7r9XxQVUjM)
 
