@@ -4,15 +4,15 @@ A VR browser-based **physics engine** written in [clojurescript](https://clojure
 
 ## Examples
 
-1. 3D diffusion of water in a box (from a Oculus Quest 1 browser) [watch video](https://www.youtube.com/watch?v=d7r9XxQVUjM)
+1. **[https://www.youtube.com/watch?v=d7r9XxQVUjM](https://www.youtube.com/watch?v=d7r9XxQVUjM)** 3D diffusion of water in a box (from a Oculus Quest 1 browser) 
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/d7r9XxQVUjM/0.jpg)](https://www.youtube.com/watch?v=d7r9XxQVUjM)
 
-2. 2D diffusion of water under static diagonal velocity field in a box (from Laptop browser) [watch video](https://youtu.be/LBo67lY-p7E)
+2. **[https://youtu.be/LBo67lY-p7E](https://youtu.be/LBo67lY-p7E)** 2D diffusion of water under static diagonal velocity field in a box (from Laptop browser) 
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/LBo67lY-p7E/0.jpg)](https://www.youtube.com/watch?v=LBo67lY-p7E)
 
-3. 2d diffusion of water (from Laptop browser) [watch video](https://youtu.be/eVWq8RlS6tc)
+3. **[https://youtu.be/eVWq8RlS6tc](https://youtu.be/eVWq8RlS6tc)** 2d diffusion of water (from Laptop browser) 
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/eVWq8RlS6tc/0.jpg)](https://www.youtube.com/watch?v=eVWq8RlS6tc)
 
