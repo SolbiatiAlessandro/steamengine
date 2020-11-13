@@ -1,13 +1,28 @@
 # steamengine
 
-A physics engine in clojurescript
+A VR browser-based **physics engine** written in [clojurescript](https://clojurescript.org/). 
+
+## Examples
+
+1. 3D diffusion of water in a box (from a Oculus Quest 1 browser) [watch video](https://www.youtube.com/watch?v=d7r9XxQVUjM)
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/d7r9XxQVUjM/0.jpg)](https://www.youtube.com/watch?v=d7r9XxQVUjM)
+
+2. 2D diffusion of water under static diagonal velocity field in a box (from Laptop browser) [watch video](https://youtu.be/LBo67lY-p7E)
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/LBo67lY-p7E/0.jpg)](https://www.youtube.com/watch?v=LBo67lY-p7E)
+
+3. 2d diffusion of water (from Laptop browser) [watch video](https://youtu.be/eVWq8RlS6tc)
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/eVWq8RlS6tc/0.jpg)](https://www.youtube.com/watch?v=eVWq8RlS6tc)
+
 
 ## Overview
 
 Features
 
-- hydrodyanmics simulations
-- VR compatibility
+- realistic hydrodyanmics simulations from the famous paper [Real-Time Fluid Dynamics for Games, Stem 2003](https://www.semanticscholar.org/paper/Real-Time-Fluid-Dynamics-for-Games-Stam/5127ac7b58e36ffd13ca4437fc123c6a018dc436?p2df)
+- runs both on laptop browser and in VR browser
 - served in Python, written in ClojureScript
 
 You can find in profiling.md some measurements around speed and efficiency of the simulation.
